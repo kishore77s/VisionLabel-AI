@@ -1,0 +1,55 @@
+services:
+
+  db:
+    image: postgres:16
+    container_name: visionlabel-postgres
+
+    environment:
+      POSTGRES_DB: visionlabel
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  backend:
+    build:
+      context: ./backend
+
+    container_name: visionlabel-backend
+
+    depends_on:
+      - db
+
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/visionlabel
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+
+  frontend:
+    build:
+      context: ./frontend
+
+    container_name: visionlabel-frontend
+
+    depends_on:
+      - backend
+
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+
+    ports:
+      - "3000:3000"
+
+
+volumes:
+  postgres_data:
